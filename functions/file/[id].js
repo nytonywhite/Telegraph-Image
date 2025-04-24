@@ -43,9 +43,13 @@ export async function onRequest(context) {
     }
 
     // Check if KV storage is available
+    // Check if KV storage is not available, return the response with inline Content-Disposition
     if (!env.img_url) {
         console.log("KV storage not available, returning image directly");
-        return response;  // Directly return image response, terminate execution
+        //return response;  // Directly return image response, terminate execution
+        const modifiedResponse = new Response(response.body, response);
+        modifiedResponse.headers.set('Content-Disposition', 'inline');
+        return modifiedResponse;
     }
 
     // The following code executes only if KV is available
@@ -77,7 +81,10 @@ export async function onRequest(context) {
 
     // Handle based on ListType and Label
     if (metadata.ListType === "White") {
-        return response;
+        //return response;
+        const modifiedResponse = new Response(response.body, response);
+        modifiedResponse.headers.set('Content-Disposition', 'inline');
+        return modifiedResponse;
     } else if (metadata.ListType === "Block" || metadata.Label === "adult") {
         const referer = request.headers.get('Referer');
         const redirectUrl = referer ? "https://static-res.pages.dev/teleimage/img-block-compressed.png" : `${url.origin}/block-img.html`;
@@ -124,7 +131,11 @@ export async function onRequest(context) {
     await env.img_url.put(params.id, "", { metadata });
 
     // Return file content
-    return response;
+    // return response;
+    // Return file content with inline Content-Disposition
+    const modifiedResponse = new Response(response.body, response);
+    modifiedResponse.headers.set('Content-Disposition', 'inline');
+    return modifiedResponse;
 }
 
 async function getFilePath(env, file_id) {
